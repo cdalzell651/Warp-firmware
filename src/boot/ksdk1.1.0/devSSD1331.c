@@ -17,11 +17,11 @@ volatile uint8_t	payloadBytes[1];
  */
 enum
 {
-	kSSD1331PinMOSI		= GPIO_MAKE_PIN(HW_GPIOA, 8),
-	kSSD1331PinSCK		= GPIO_MAKE_PIN(HW_GPIOA, 9),
-	kSSD1331PinCSn		= GPIO_MAKE_PIN(HW_GPIOB, 13),
-	kSSD1331PinDC		= GPIO_MAKE_PIN(HW_GPIOA, 12),
-	kSSD1331PinRST		= GPIO_MAKE_PIN(HW_GPIOB, 0),
+	kSSD1331PinMOSI		= GPIO_MAKE_PIN(HW_GPIOA, 7),
+	kSSD1331PinSCK		= GPIO_MAKE_PIN(HW_GPIOB, 0),
+	kSSD1331PinCSn		= GPIO_MAKE_PIN(HW_GPIOB, 11),
+	kSSD1331PinDC		= GPIO_MAKE_PIN(HW_GPIOB, 10),
+	kSSD1331PinRST		= GPIO_MAKE_PIN(HW_GPIOA, 5),
 };
 
 static int
@@ -67,10 +67,10 @@ devSSD1331init(void)
 	/*
 	 *	Override Warp firmware's use of these pins.
 	 *
-	 *	Re-configure SPI to be on PTA8 and PTA9 for MOSI and SCK respectively.
+	 *	Re-configure SPI to be on PTA7 and PTB0 for MOSI and SCK respectively.
 	 */
-	PORT_HAL_SetMuxMode(PORTA_BASE, 8u, kPortMuxAlt3);
-	PORT_HAL_SetMuxMode(PORTA_BASE, 9u, kPortMuxAlt3);
+	PORT_HAL_SetMuxMode(PORTA_BASE, 7u, kPortMuxAlt3);
+	PORT_HAL_SetMuxMode(PORTB_BASE, 0u, kPortMuxAlt3);
 
 	enableSPIpins();
 
@@ -79,9 +79,9 @@ devSSD1331init(void)
 	 *
 	 *	Reconfigure to use as GPIO.
 	 */
-	PORT_HAL_SetMuxMode(PORTB_BASE, 13u, kPortMuxAsGpio);
-	PORT_HAL_SetMuxMode(PORTA_BASE, 12u, kPortMuxAsGpio);
-	PORT_HAL_SetMuxMode(PORTB_BASE, 0u, kPortMuxAsGpio);
+	PORT_HAL_SetMuxMode(PORTB_BASE, 11u, kPortMuxAsGpio);
+	PORT_HAL_SetMuxMode(PORTA_BASE, 5u, kPortMuxAsGpio);
+	PORT_HAL_SetMuxMode(PORTB_BASE, 10u, kPortMuxAsGpio);
 
 
 	/*
@@ -132,7 +132,7 @@ devSSD1331init(void)
 	writeCommand(kSSD1331CommandCONTRASTB);		// 0x82
 	writeCommand(0x50);
 	writeCommand(kSSD1331CommandCONTRASTC);		// 0x83
-	writeCommand(0x7D);
+	writeCommand(0x7d);
 	writeCommand(kSSD1331CommandDISPLAYON);		// Turn on oled panel
 
 	/*
@@ -156,8 +156,19 @@ devSSD1331init(void)
 	 *	Any post-initialization drawing commands go here.
 	 */
 	//...
+        writeCommand(kSSD1331CommandDRAWRECT);
+        writeCommand(0x00);
+        writeCommand(0x00);
+        writeCommand(0x5F);
+        writeCommand(0x3F);
+        writeCommand(0x00);
+        writeCommand(0x3F);
+        writeCommand(0x00);
+        writeCommand(0x00);
+        writeCommand(0x3F);
+        writeCommand(0x00);
 
-
+        SEGGER_RTT_WriteString(0, "\r\n\tDone with draw rectangle...\n");
 
 	return 0;
 }
