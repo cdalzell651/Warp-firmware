@@ -55,7 +55,10 @@
 #include "SEGGER_RTT.h"
 #include "warp.h"
 
-//#define WARP_FRDMKL03
+#include "devSSD1331.h"
+#include "devINA219.h"
+
+#define WARP_FRDMKL03
 
 /*
 *	Comment out the header file to disable devices
@@ -69,6 +72,7 @@
 #	include "devBME680.h"
 #	include "devCCS811.h"
 #	include "devAMG8834.h"
+
 //#include "devTCS34725.h"
 //#include "devSI4705.h"
 //#include "devSI7021.h"
@@ -110,6 +114,8 @@ volatile WarpI2CDeviceState			deviceBMX055magState;
 #ifdef WARP_BUILD_ENABLE_DEVMMA8451Q
 volatile WarpI2CDeviceState			deviceMMA8451QState;
 #endif
+
+volatile WarpI2CDeviceState			deviceINA219State;
 
 #ifdef WARP_BUILD_ENABLE_DEVLPS25H
 volatile WarpI2CDeviceState			deviceLPS25HState;
@@ -1235,8 +1241,10 @@ main(void)
 #endif
 
 #ifdef WARP_BUILD_ENABLE_DEVMMA8451Q
-	initMMA8451Q(	0x1C	/* i2cAddress */,	&deviceMMA8451QState	);
-#endif	
+	initMMA8451Q(	0x1D	/* i2cAddress */,	&deviceMMA8451QState	);
+#endif
+
+	initINA219(   0x40 	/* i2cAddress */, 	&deviceINA219State	);
 
 #ifdef WARP_BUILD_ENABLE_DEVLPS25H
 	initLPS25H(	0x5C	/* i2cAddress */,	&deviceLPS25HState	);
@@ -1340,7 +1348,7 @@ main(void)
 #endif
 
 
-
+        devSSD1331init();
 
 	while (1)
 	{
@@ -1443,6 +1451,9 @@ main(void)
 #endif
 
 		SEGGER_RTT_WriteString(0, "\r- 'z': dump all sensors data.\n");
+		OSA_TimeDelay(gWarpMenuPrintDelayMilliseconds);
+
+		SEGGER_RTT_WriteString(0, "\r- ',': show current sensor reading.\n");
 		OSA_TimeDelay(gWarpMenuPrintDelayMilliseconds);
 
 		SEGGER_RTT_WriteString(0, "\rEnter selection> ");
@@ -2457,6 +2468,13 @@ main(void)
 				break;
 			}
 
+
+			case ',':
+			{
+				enableI2Cpins(menuI2cPullupValue);
+				printSensorDataINA219();
+				break;
+			}
 
 			/*
 			 *	Ignore naked returns.
