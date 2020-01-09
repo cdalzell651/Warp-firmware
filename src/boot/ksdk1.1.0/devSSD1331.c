@@ -35,7 +35,7 @@ writeCommand(uint8_t commandByte)
 	 *	Make sure there is a high-to-low transition by first driving high, delay, then drive low.
 	 */
 	GPIO_DRV_SetPinOutput(kSSD1331PinCSn);
-	OSA_TimeDelay(10);
+	//OSA_TimeDelay(0.1);
 	GPIO_DRV_ClearPinOutput(kSSD1331PinCSn);
 
 	/*
@@ -49,7 +49,7 @@ writeCommand(uint8_t commandByte)
 					(const uint8_t * restrict)&payloadBytes[0],
 					(uint8_t * restrict)&inBuffer[0],
 					1		/* transfer size */,
-					1000		/* timeout in microseconds (unlike I2C which is ms) */);
+					75		/* timeout in microseconds (unlike I2C which is ms) */);
 
 	/*
 	 *	Drive /CS high
@@ -168,7 +168,42 @@ devSSD1331init(void)
         writeCommand(0x3F);
         writeCommand(0x00);
 
-        SEGGER_RTT_WriteString(0, "\r\n\tDone with draw rectangle...\n");
-
 	return 0;
+}
+
+
+void
+devSSD1331DrawBar(int bar, int height)
+{
+
+	int noBars = 16;
+	int barSize = 96/noBars;
+
+// First write the bar to black to erase the bar which was there before
+	writeCommand(kSSD1331CommandDRAWRECT);
+        writeCommand(96 - (bar+1)*barSize);
+        writeCommand(0x00);
+        writeCommand(95 - bar*barSize);
+        writeCommand(0x3F);
+        writeCommand(0x00);
+        writeCommand(0x00);
+        writeCommand(0x00);
+        writeCommand(0x00);
+        writeCommand(0x00);
+        writeCommand(0x00);
+
+//Now draw the new bar in it's place: (For now it should be green)
+        writeCommand(kSSD1331CommandDRAWRECT);
+        writeCommand(96 - (bar+1)*barSize);
+        writeCommand(0x00);
+        writeCommand(95 - bar*barSize);
+        writeCommand(height);
+        writeCommand(0x00);
+        writeCommand(0x3F);
+        writeCommand(0x00);
+        writeCommand(0x00);
+        writeCommand(0x3F);
+        writeCommand(0x00);
+
+	return;
 }

@@ -345,3 +345,6 @@ void		enableI2Cpins(uint16_t pullupValue);
 void		disableI2Cpins(void);
 void		enableSPIpins(void);
 void		disableSPIpins(void);
+int*		fft(int *samples);//, float * preCompValues);
+int*		getADCSamples();
+void		initADC();
